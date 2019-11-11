@@ -45,20 +45,28 @@ def go(dataset, m1, m2):
         print(f"\n{label}:")
         model = load_model(model_file)
 
+        model.summary()
+
+        model.compile(
+            loss=tf.keras.losses.categorical_crossentropy,
+            optimizer=tf.train.AdamOptimizer(),
+            metrics=['accuracy'])
+
+        score = model.evaluate(x_test, y_test, verbose=0)
+        print('\nTest loss:', score[0])
+        print('Test accuracy:', score[1])
+
+        # Timeit
+        model = load_model(model_file)
         model.compile(
             loss=tf.keras.losses.categorical_crossentropy,
             optimizer=tf.train.AdamOptimizer(),
             metrics=['accuracy'],
             options=run_options, run_metadata=run_metadata)
-
-        score = model.evaluate(x_test, y_test, verbose=0)
-        print('Test loss:', score[0])
-        print('Test accuracy:', score[1])
-
-        # Timeit
-        timing = timeit.timeit(lambda: model.evaluate(x_test, y_test, verbose=0), number=5)
+        timing = timeit.timeit(lambda: model.predict(x_test), number=5)
         timings.append(timing)
         print(f"Timing: {timing:.2f} s for {x_test.shape[0]} items")
+        print("------------------------------------")
 
         tl = timeline.Timeline(run_metadata.step_stats)
         ctf = tl.generate_chrome_trace_format()
